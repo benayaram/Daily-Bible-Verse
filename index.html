@@ -3,31 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bible Verses</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Link to your CSS file -->
+    <title>Holy Word</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-dYitP76aT4xCa6R3LHZGwZywNNxGivxLP56BhG0FmF7I5HtNwOb6uqSkOg9xGMlm0ig7Hb4FGBjv4lGqPzzgXw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link rel="shortcut icon" href="logo.png" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="Mainheading">
         <h1 style="font-size: 30px; justify-content: center;">Holy Word</h1>
         <h4>Go into all the world and preach the gospel to all creations - Mark 16:15</h4>
-        <a href="https://www.youtube.com/@holyword_2023"><img src="https://img.shields.io/badge/YouTube-Subscribe-red?style=flat-square&logo=youtube" alt="YouTube"></a>
-<a href="https://holyword.netlify.app"><img src="https://img.shields.io/badge/Website-Visit-blue?style=flat-square&logo=google-chrome" alt="Website"></a>
-<a href="https://www.instagram.com/holy_word2023/"><img src="https://img.shields.io/badge/Instagram-Follow-blueviolet?style=flat-square&logo=instagram" alt="Instagram"></a>
+        <a href="https://www.youtube.com/@holyword_2023" class="social-link">
+            <i class="fab fa-youtube"></i> Subscribe on YouTube
+        </a>
+        <a href="https://holyword.netlify.app" class="social-link">
+            <i class="fas fa-globe"></i> Visit Website
+        </a>
+        <a href="https://www.instagram.com/holy_word2023/" class="social-link">
+            <i class="fab fa-instagram"></i> Follow on Instagram
+        </a></div>
 
-    </div>
-    <div id="bibleContainer" class="bible-container">
-    
-        <!-- Bible verses will be dynamically added here -->
-    </div>
+    <!-- <div class="navigation">
+        <select id="bookDropdown" onchange="loadChapters()">
+            <option value="">Select Book</option>
+        </select>
+        <select id="chapterDropdown" onchange="loadVerses()">
+            <option value="">Select Chapter</option>
+        </select>
+        <select id="verseDropdown">
+            <option value="">Select Verse</option>
+        </select>
+        <button id="searchButton" onclick="searchVerse()">Search</button>
+    </div> -->
+
+    <div id="bibleContainer"></div>
+    <button id="loadMoreButton" onclick="loadNextBook()">Load More</button>
+
     <div id="modal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h2 id="verseHeader">Daily Bible Verse</h2>
-            <div id="verseText" class="verse-text"></div>
+            <h2 id="verseHeader"></h2>
+            <p id="verseText"></p>
             <button id="copyToClipboard">Copy to Clipboard</button>
-            <button id="saveImage">Save Image</button>
+            <button id="saveImage">Save as Image</button>
         </div>
     </div>
-    <script src="script.js"></script> <!-- Link to your JavaScript file -->
+
+    <script src="script.js"></script>
+    <!-- <script src="search.js"></script> -->
 </body>
 </html>
