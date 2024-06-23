@@ -1,4 +1,48 @@
-// Function to save verse as image with template
+// script.js
+
+// Function to open daily verse modal and attach event listeners
+function openDailyVerseModal(bookName, chapterNumber, verseNumber, verseText) {
+    const modal = document.getElementById('modal');
+    const modalContent = modal.querySelector('.modal-content');
+
+    // Update modal content with verse information
+    const verseHeader = modalContent.querySelector('#verseHeader');
+    const verseTextElement = modalContent.querySelector('#verseText');
+    verseHeader.textContent = `${bookName} ${chapterNumber}:${verseNumber}`;
+    verseTextElement.textContent = verseText;
+
+    // Show modal
+    modal.style.display = 'block';
+
+    // Close modal when the close button or outside modal area is clicked
+    const closeModal = modal.querySelector('.close');
+    closeModal.addEventListener('click', function() {
+        modal.style.display = 'none';
+    });
+
+    window.addEventListener('click', function(event) {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    });
+
+    // Add event listeners for Copy to Clipboard and Save Image buttons
+    const copyToClipboardButton = modalContent.querySelector('#copyToClipboard');
+    const saveImageButton = modalContent.querySelector('#saveImage');
+
+    copyToClipboardButton.addEventListener('click', function() {
+        const textToCopy = `${bookName} ${chapterNumber}:${verseNumber} - ${verseText}`;
+        navigator.clipboard.writeText(textToCopy)
+            .then(() => alert('Verse copied to clipboard!'))
+            .catch(err => console.error('Failed to copy verse:', err));
+    });
+
+    saveImageButton.addEventListener('click', function() {
+        saveVerseImageWithTemplate(bookName, chapterNumber, verseNumber, verseText);
+    });
+}
+
+// Function to save verse as an image
 function saveVerseImageWithTemplate(bookName, chapterNumber, verseNumber, verseText) {
     const templateImage = new Image();
     templateImage.onload = function() {
@@ -23,7 +67,7 @@ function saveVerseImageWithTemplate(bookName, chapterNumber, verseNumber, verseT
         customFont.load().then(function(loadedFont) {
             document.fonts.add(loadedFont);
             // Apply custom font to context
-            context.font = 'bold 36px Arial'; // Example: Use Suravaramfont as primary, fallback to Arial
+            context.font = 'bold 50px Arial'; // Example: Use Suravaramfont as primary, fallback to Arial
             context.fillStyle = '#fff'; // White color for text
             context.textAlign = 'center'; // Center-align text
 
@@ -32,7 +76,7 @@ function saveVerseImageWithTemplate(bookName, chapterNumber, verseNumber, verseT
             context.fillText(referenceText, canvas.width / 2, 100); // Adjust vertical position here
 
             // Set text style for verse text
-            context.font = '40px Suravaramfont, Arial'; // Example: Use Suravaramfont as primary, fallback to Arial
+            context.font = '45px Suravaramfont, Arial'; // Example: Use Suravaramfont as primary, fallback to Arial
             context.fillStyle = '#fff'; // White color for verse text
             context.textAlign = 'center'; // Center-align text
 
@@ -67,7 +111,7 @@ function saveVerseImageWithTemplate(bookName, chapterNumber, verseNumber, verseT
     templateImage.src = './versebackground.png'; // Optional: Replace with actual path to template image
 }
 
-// Function to break text into lines based on width
+// Function to break text into lines for canvas rendering
 function breakTextIntoLines(text, maxWidth) {
     const words = text.split(' ');
     let lines = [];
@@ -88,49 +132,53 @@ function breakTextIntoLines(text, maxWidth) {
     lines.push(currentLine);
     return lines;
 }
-// Initial load on page load
-window.addEventListener('load', function() {
-    fetchAndParseXML();
-});
 
-// Function to fetch and parse XML data asynchronously
+// Function to fetch and parse XML data (for Bible content)
+let currentBookIndex = 0;
+let books;
+
 async function fetchAndParseXML() {
     try {
         const response = await fetch('telugubible.xml'); // Replace with your XML file path
         const xmlText = await response.text();
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-
-        const bibleContainer = document.getElementById('bibleContainer');
-        const books = xmlDoc.getElementsByTagName('BIBLEBOOK');
-
-        for (let i = 0; i < books.length; i++) {
-            const book = books[i];
-            const bookName = book.getAttribute('bname');
-
-            // Create a card for the book
-            const bookCard = createBookCard(bookName);
-            bibleContainer.appendChild(bookCard);
-
-            // Get verses for the current book
-            const verses = book.getElementsByTagName('VERS');
-            for (let j = 0; j < verses.length; j++) {
-                const verse = verses[j];
-                const chapterNumber = verse.parentNode.getAttribute('cnumber');
-                const verseNumber = verse.getAttribute('vnumber');
-                const verseText = verse.textContent.trim();
-
-                // Create a card for each verse
-                const verseCard = createVerseCard(bookName, chapterNumber, verseNumber, verseText);
-                bookCard.appendChild(verseCard);
-            }
-        }
+        books = xmlDoc.getElementsByTagName('BIBLEBOOK');
+        loadNextBook(); // Load the first book immediately after parsing XML
     } catch (error) {
         console.error('Error fetching or parsing XML:', error);
     }
 }
 
-// Function to create a card for the book
+function loadNextBook() {
+    if (currentBookIndex < books.length) {
+        const book = books[currentBookIndex];
+        const bookName = book.getAttribute('bname');
+
+        // Create a card for the book
+        const bookCard = createBookCard(bookName);
+        document.getElementById('bibleContainer').appendChild(bookCard);
+
+        // Get verses for the current book
+        const verses = book.getElementsByTagName('VERS');
+        for (let j = 0; j < verses.length; j++) {
+            const verse = verses[j];
+            const chapterNumber = verse.parentNode.getAttribute('cnumber');
+            const verseNumber = verse.getAttribute('vnumber');
+            const verseText = verse.textContent.trim();
+
+            // Create a card for each verse
+            const verseCard = createVerseCard(bookName, chapterNumber, verseNumber, verseText);
+            bookCard.querySelector('.verse-list').appendChild(verseCard);
+        }
+
+        currentBookIndex++;
+        if (currentBookIndex >= books.length) {
+            document.getElementById('loadMoreButton').style.display = 'none'; // Hide the button when all books are loaded
+        }
+    }
+}
+
 function createBookCard(bookName) {
     const bookCard = document.createElement('div');
     bookCard.classList.add('book-card');
@@ -145,7 +193,6 @@ function createBookCard(bookName) {
     return bookCard;
 }
 
-// Function to create a verse card
 function createVerseCard(bookName, chapterNumber, verseNumber, verseText) {
     const verseCard = document.createElement('div');
     verseCard.classList.add('verse-card');
@@ -168,44 +215,4 @@ function createVerseCard(bookName, chapterNumber, verseNumber, verseText) {
     return verseCard;
 }
 
-// Function to open Daily Bible Verse modal
-function openDailyVerseModal(bookName, chapterNumber, verseNumber, verseText) {
-    const modal = document.getElementById('modal');
-    const modalContent = modal.querySelector('.modal-content');
-
-    // Update modal content with verse information
-    const verseHeader = modalContent.querySelector('#verseHeader');
-    const verseTextElement = modalContent.querySelector('#verseText');
-    verseHeader.textContent = `${bookName} ${chapterNumber}:${verseNumber}`;
-    verseTextElement.textContent = verseText;
-
-    // Show modal
-    modal.style.display = 'block';
-
-    // Close modal when the close button or outside modal area is clicked
-    const closeModal = modal.querySelector('.close');
-    closeModal.addEventListener('click', function() {
-        modal.style.display = 'none';
-    });
-
-    window.addEventListener('click', function(event) {
-        if (event.target == modal) {
-            modal.style.display = 'none';
-        }
-    });
-
-    // Add event listeners for Copy to Clipboard and Save Image buttons
-    const copyToClipboardButton = modalContent.querySelector('#copyToClipboard');
-    const saveImageButton = modalContent.querySelector('#saveImage');
-
-    copyToClipboardButton.addEventListener('click', function() {
-        navigator.clipboard.writeText(verseText)
-            .then(() => alert('Verse copied to clipboard!'))
-            .catch(err => console.error('Failed to copy verse:', err));
-    });
-
-    saveImageButton.addEventListener('click', function() {
-        saveVerseImageWithTemplate(bookName, chapterNumber, verseNumber, verseText);
-    });
-}
-
+window.addEventListener('load', fetchAndParseXML);
